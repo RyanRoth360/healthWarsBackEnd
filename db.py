@@ -10,16 +10,16 @@ class database:
     def __init__(self):
         self.db_conn = sqlite3.connect(self.DB_NAME)
         self.activity_weights = {
-            'hiking': (1.0, 0.6, 0.4),
-            'cycling': (0.8, 0.6, 0.6),
-            'running': (1.0, 0.6, 0.6),
-            'swimming': (0.6, 0.6, 0.6),
-            'climbing': (0.6, 0.6, 0.4),
-            'meditating': (0.1, 1.0, 0.8),
-            'strength': (0.5, 0.6, 0.6),
-            'reading': (0.1, 1.0, 1.0),
-            'studying': (0.1, 1.0, 0.2),
-            'arts': (0.1, 1.0, 0.2)
+            "hiking": (1.0, 0.6, 0.4),
+            "cycling": (0.8, 0.6, 0.6),
+            "running": (1.0, 0.6, 0.6),
+            "swimming": (0.6, 0.6, 0.6),
+            "climbing": (0.6, 0.6, 0.4),
+            "meditating": (0.1, 1.0, 0.8),
+            "strength": (0.5, 0.6, 0.6),
+            "reading": (0.1, 1.0, 1.0),
+            "studying": (0.1, 1.0, 0.2),
+            "arts": (0.1, 1.0, 0.2),
         }
 
     def select(self, table_name, columns=[], where={}, in_operator=False):
@@ -31,19 +31,19 @@ class database:
         columns_query_string = ", ".join(columns)
         query = "SELECT %s FROM %s" % (columns_query_string, table_name)
         # build where query string
-        '''Modified this for when user is searching for speakers'''
+        """Modified this for when user is searching for speakers"""
         if where:
             where_query_string = []
             for k, v in where.items():
-                if k == 'speakers':
+                if k == "speakers":
                     where_query_string.append(
-                        "(%s LIKE '%%; %s; %%' OR %s LIKE '%s; %%' OR %s LIKE '%%; %s' OR %s = '%s')" %
-                        (k, v, k, v, k, v, k, v)
+                        "(%s LIKE '%%; %s; %%' OR %s LIKE '%s; %%' OR %s LIKE '%%; %s' OR %s = '%s')"
+                        % (k, v, k, v, k, v, k, v)
                     )
 
                 else:
                     where_query_string.append("%s = '%s'" % (k, v))
-            query += " WHERE " + ' AND '.join(where_query_string)
+            query += " WHERE " + " AND ".join(where_query_string)
 
         # print(query)
         result = []
@@ -68,7 +68,10 @@ class database:
 
         # Prepare the SQL query with table name, columns, and values
         sql_query = "INSERT INTO %s (%s) VALUES (%s)" % (
-            table_name, columns_query, values_query)
+            table_name,
+            columns_query,
+            values_query,
+        )
 
         # Execute the SQL query
         cursor = self.db_conn.cursor()
@@ -104,51 +107,80 @@ class database:
 
     # SPECIFIC INSERTS
     def insert_user(self, username, password, name_first, name_last):
-        '''Inserts user and returns the user_id primary key'''
+        """Inserts user and returns the user_id primary key"""
         user_dict = {}
-        user_dict['user_name'] = username
-        user_dict['password'] = password
-        user_dict['name_first'] = name_first
-        user_dict['name_last'] = name_last
-        self.insert('users', user_dict)
-        return self.select('users', ['user_id'], {
-            'user_name': username})[0]['user_id']
+        user_dict["user_name"] = username
+        user_dict["password"] = password
+        user_dict["name_first"] = name_first
+        user_dict["name_last"] = name_last
+        self.insert("users", user_dict)
+        return self.select("users", ["user_id"], {"user_name": username})[0]["user_id"]
 
     def insert_friendship(self, user_id1, user_id2):
         friend_dict = {}
-        friend_dict['user_id1'] = user_id1
-        friend_dict['user_id2'] = user_id2
-        self.insert('friendship', friend_dict)
+        friend_dict["user_id1"] = user_id1
+        friend_dict["user_id2"] = user_id2
+        self.insert("friendship", friend_dict)
 
     def insert_interests(self, username, interests):
-        '''Takes list of interest'''
-        user_id = self.select('users', ['user_id'], {
-            'user_name': username})[0]['user_id']
+        """Takes list of interest"""
+        user_id = self.select("users", ["user_id"], {"user_name": username})[0][
+            "user_id"
+        ]
         interests_dict = {i: 1 for i in interests}
-        interests_dict['user_id'] = user_id
-        self.insert('interests', interests_dict)
+        interests_dict["user_id"] = user_id
+        self.insert("interests", interests_dict)
 
     def insert_reccomendation(self, title, category):
         rec_dict = {}
-        rec_dict['title'] = title
-        rec_dict['category'] = category
-        rec_dict['steps_rel'] = self.activity_weights[category][0]
-        rec_dict['screen_time_rel'] = self.activity_weights[category][1]
-        rec_dict['sleep_rel'] = self.activity_weights[category][2]
-        self.insert('reccomendations', rec_dict)
+        rec_dict["title"] = title
+        rec_dict["category"] = category
+        rec_dict["steps_rel"] = self.activity_weights[category][0]
+        rec_dict["screen_time_rel"] = self.activity_weights[category][1]
+        rec_dict["sleep_rel"] = self.activity_weights[category][2]
+        self.insert("reccomendations", rec_dict)
 
     def insert_health_data(self, user_id, steps, screen_time, sleep):
         health_dict = {}
         step_score = round(min(1, steps / 10000), 2)
-        scree_time_score = round(min(1, 1 - screen_time/10), 2)
+        scree_time_score = round(min(1, 1 - screen_time / 10), 2)
         sleep_score = round(min(1, sleep / 8), 2)
-        health_dict['user_id'] = user_id
-        health_dict['steps'] = steps
-        health_dict['screen_time'] = screen_time
-        health_dict['sleep'] = sleep
-        health_dict['overall_score'] = round((
-            step_score + scree_time_score + sleep_score) / 3, 2)
-        health_dict['step_score'] = step_score
-        health_dict['screen_time_score'] = scree_time_score
-        health_dict['sleep_score'] = sleep_score
-        self.insert('health_data', health_dict)
+        health_dict["user_id"] = user_id
+        health_dict["steps"] = steps
+        health_dict["screen_time"] = screen_time
+        health_dict["sleep"] = sleep
+        health_dict["overall_score"] = round(
+            (step_score + scree_time_score + sleep_score) / 3, 2
+        )
+        health_dict["step_score"] = step_score
+        health_dict["screen_time_score"] = scree_time_score
+        health_dict["sleep_score"] = sleep_score
+        self.insert("health_data", health_dict)
+
+    def get_health_data(self, user_id):
+        # Select relevant columns from the health_data table for a specific user
+        columns = ["user_id", "steps", "screen_time", "sleep", "overall_score"]
+        where = {"user_id": user_id}
+        health_data = self.select("health_data", columns, where)
+
+        return health_data
+
+    def get_interests(self, user_id):
+        columns = [
+            "user_id",
+            "hiking",
+            "cycling",
+            "running",
+            "swimming",
+            "climbing",
+            "meditating",
+            "strength",
+            "reading",
+            "studying",
+            "arts",
+        ]
+        where = {"user_id": user_id}
+
+        interests_data = self.select("interests", columns, where)
+
+        return interests_data
