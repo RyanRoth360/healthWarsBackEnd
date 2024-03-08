@@ -5,7 +5,7 @@ import math
 
 class database:
 
-    DB_NAME = "health_wars.db"
+    DB_NAME = "/Users/ryan_roth/Desktop/125 backend/healthWarsBackEnd/health_wars.db"
 
     def __init__(self):
         self.db_conn = sqlite3.connect(self.DB_NAME)
@@ -132,12 +132,11 @@ class database:
         user_id2 = self.get_userid(username2)
         self.insert_friendship(user_id1, user_id2)
 
-    def insert_interests(self, username, interests):
-        '''Takes list of interest'''
-        user_id = self.select('users', ['user_id'], {
-            'user_name': username})[0]['user_id']
-        interests_dict = {i: 1 for i in interests}
+    def insert_interests(self, interests_dict):
+        '''Takes a dictionary from the front end'''
+        user_id = self.get_userid(interests_dict['username'])
         interests_dict["user_id"] = user_id
+        del interests_dict['username']
         self.insert("interests", interests_dict)
 
     def insert_reccomendation(self, title, category):
@@ -206,3 +205,11 @@ class database:
                 result_dict[name] = i[2]
 
         return result_dict
+
+    def check_login(self, username, password):
+        result = self.select('users', ['user_name', 'password'], {
+            'user_name': username})
+
+        if len(result) != 0 and result[0]['password'] == password:
+            return True
+        return False

@@ -10,20 +10,17 @@ def set_user():
     data = request.get_json()
     name_first = data.get('name_first')
     name_last = data.get('name_last')
-    user_name = data.get('user_name')
+    user_name = data.get('username')
     password = data.get('password')
     db.insert_user(user_name, password, name_first, name_last)
     db.close()
 
 
-# Might need to format interests to list here
 @app.route("/set_interests", methods=['POST'])
 def set_interests():
     db = database()
     data = request.get_json()
-    user_name = data.get('user_name')
-    interests = data.get('interests')
-    db.insert_interests(user_name, interests)
+    db.insert_interests(data)
     db.close()
 
 
@@ -46,7 +43,16 @@ def get_recs():
 @app.route("/get_leaderboard", methods=['GET'])
 def get_leaderboard():
     db = database()
-    pass
+
+
+@app.route("/login", methods=['GET'])
+def login():
+    db = database()
+    data = request.get_json()
+    un = data.get('username')
+    pw = data.get('password')
+    db.check_login(un, pw)
+    db.close()
 
 
 if __name__ == '__main__':

@@ -56,7 +56,9 @@ def recommend(health_data, interest_data, weights):
 
 def main():
     db = database()
-    db.get_leaderboard('johndoe', 1)
+    db.check_login('johndoe1', 'password123')
+
+    # db.get_leaderboard('johndoe', 1)
 
     # health_data = db.get_health_data(1)
     # interest_data = db.get_interests(1)
