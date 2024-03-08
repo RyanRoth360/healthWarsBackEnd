@@ -164,3 +164,45 @@ class database:
         health_dict['screen_time_score'] = scree_time_score
         health_dict['sleep_score'] = sleep_score
         self.insert('health_data', health_dict)
+
+    def get_userid(self, username):
+        user_id = self.select('users', ['user_id'], {
+            'user_name': username})[0]['user_id']
+        return user_id
+
+    def get_leaderboard(self, username, number=5):
+        user_id = self.get_userid(username)
+        query = f"""
+            SELECT
+                user_id2
+            FROM
+                friendship
+            WHERE
+                user_id1 = {user_id}
+
+        """
+        friends = self.execute_query(query)
+
+        results = []
+        for f in friends:
+            query = f"""
+            SELECT 
+                u.name_first,
+                u.name_last,
+                hd.overall_score
+            FROM 
+                users u
+            JOIN 
+                health_data hd ON u.user_id = hd.user_id
+            WHERE 
+                hd.user_id = {f[0]};
+            """
+            results.append(self.execute_query(query))
+
+        result_dict = {}
+        for r in results:
+            for i in r:
+                name = i[0] + ' ' + i[1]
+                result_dict[name] = i[2]
+
+        return result_dict

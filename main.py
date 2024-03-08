@@ -56,18 +56,14 @@ def recommend(health_data, interest_data, weights):
 
 def main():
     db = database()
-    # db.insert_health_data(2, 2342, 2, 6.3)
-    # db.insert_health_data(3, 5893, 5.4, 10.2)
-    # db.insert_health_data(4, 7386, 9.1, 8)
-
     db.get_leaderboard('johndoe', 1)
 
-    health_data = db.get_health_data(1)
-    interest_data = db.get_interests(1)
+    # health_data = db.get_health_data(1)
+    # interest_data = db.get_interests(1)
 
-    ranked = recommend(health_data, interest_data, db.activity_weights)
+    # ranked = recommend(health_data, interest_data, db.activity_weights)
 
-    print(ranked)
+    # print(ranked)
 
 
 if __name__ == "__main__":

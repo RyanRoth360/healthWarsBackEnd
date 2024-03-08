@@ -43,10 +43,9 @@ def get_recs():
     pass
 
 
-@app.route("/get_recs", methods=['GET'])
+@app.route("/get_leaderboard", methods=['GET'])
 def get_leaderboard():
     db = database()
-    # PHILIP ALG
     pass
 
 
