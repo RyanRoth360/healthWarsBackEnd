@@ -61,6 +61,9 @@ class database:
 
         return result
 
+    def execute_query(self, query):
+        return self.db_conn.execute(query)
+
     def insert(self, table_name, item):
         # Build columns & values queries
         columns_query = ", ".join(item.keys())
@@ -111,8 +114,6 @@ class database:
         user_dict['name_first'] = name_first
         user_dict['name_last'] = name_last
         self.insert('users', user_dict)
-        return self.select('users', ['user_id'], {
-            'user_name': username})[0]['user_id']
 
     def insert_friendship(self, user_id1, user_id2):
         friend_dict = {}
@@ -120,10 +121,15 @@ class database:
         friend_dict['user_id2'] = user_id2
         self.insert('friendship', friend_dict)
 
+    def insert_friendship_usernames(self, username1, username2):
+        '''Add error handling is a username doesn't exist'''
+        user_id1 = self.get_userid(username1)
+        user_id2 = self.get_userid(username2)
+        self.insert_friendship(user_id1, user_id2)
+
     def insert_interests(self, username, interests):
         '''Takes list of interest'''
-        user_id = self.select('users', ['user_id'], {
-            'user_name': username})[0]['user_id']
+        user_id = self.get_userid(username)
         interests_dict = {i: 1 for i in interests}
         interests_dict['user_id'] = user_id
         self.insert('interests', interests_dict)
@@ -152,3 +158,41 @@ class database:
         health_dict['screen_time_score'] = scree_time_score
         health_dict['sleep_score'] = sleep_score
         self.insert('health_data', health_dict)
+
+    def get_userid(self, user_name):
+        return self.select('users', ['user_id'], {
+            'user_name': user_name})[0]['user_id']
+
+    def get_leaderboard(self, user_name, number=5):
+        user_id = self.get_userid(user_name)
+        query = f'''
+            SELECT 
+                user_id2
+            FROM 
+                friendship
+            WHERE 
+                user_id1 = {user_id};
+            '''
+        friends = self.execute_query(query)
+        results = []
+        for f in friends:
+            query = f"""
+                SELECT 
+                    u.name_first,
+                    u.name_last,
+                    hd.overall_score
+                FROM 
+                    users u
+                JOIN 
+                    health_data hd ON u.user_id = hd.user_id
+                WHERE 
+                    hd.user_id = {f[0]}
+                """
+
+            results.append(self.execute_query(query))
+
+        result_dict = {}
+        for r in results:
+            for i in r:
+                name = i[0] + ' ' + i[1]
+                result_dict[name] = i[2]
