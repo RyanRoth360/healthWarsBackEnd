@@ -151,7 +151,7 @@ class database:
     def insert_health_data(self, user_id, steps, screen_time, sleep):
         health_dict = {}
         step_score = round(min(1, steps / 10000), 2)
-        scree_time_score = round(min(1, 1 - screen_time / 10), 2)
+        scree_time_score = round(min(1, max(0, 1 - screen_time / 10)), 2)
         sleep_score = round(min(1, sleep / 8), 2)
         health_dict['user_id'] = user_id
         health_dict['steps'] = steps
@@ -198,18 +198,84 @@ class database:
             """
             results.append(self.execute_query(query))
 
-        result_dict = {}
+        user = self.select('health_data', ['overall_score'], {
+                           'user_id': user_id})
+
+        result_dict = {'You': round(user[0]['overall_score'] * 10000, 2)}
         for r in results:
             for i in r:
                 name = i[0] + ' ' + i[1]
-                result_dict[name] = i[2]
+                result_dict[name] = round(i[2] * 10000, 2)
 
+        # print(result_dict)
         return result_dict
 
     def check_login(self, username, password):
-        result = self.select('users', ['user_name', 'password'], {
+        result = self.select('users', ['password'], {
             'user_name': username})
 
         if len(result) != 0 and result[0]['password'] == password:
             return True
         return False
+
+    def get_min_score(self, username):
+        user_id = self.get_userid(username)
+        scores = self.select(
+            "health_data",
+            ["step_score", "screen_time_score", "sleep_score"],
+            {"user_id": user_id},
+        )
+
+        score = scores[0]
+        return min(score, key=score.get)
+
+    def get_interest_dict(self, username):
+
+        user_id = self.get_userid(username)
+        int_dict = self.select(
+            "interests",
+            [
+                "hiking",
+                "running",
+                "cycling",
+                "swimming",
+                "meditating",
+                "strength",
+                "reading",
+                "studying",
+                "arts",
+                "climbing",
+            ],
+            {"user_id": user_id},
+        )
+
+        return int_dict[0]
+
+    def get_recomendations(self, username):
+        weakest_link = self.get_min_score(username)
+        if weakest_link == "step_score":
+            weakest_link = "steps_rel"
+        elif weakest_link == "sleep_score":
+            weakest_link = "sleep_rel"
+        elif weakest_link == "screen_time_score":
+            weakest_link = "screen_time_rel"
+
+        interests = self.get_interest_dict(username)
+        recs = self.select("reccomendations", [
+                           weakest_link, "category", "title"])
+        rel_weight = 0.4
+        interest_weight = 0.6
+        # Need to query the relevance score of the weakest_link
+
+        rec_dict = {}
+        for r in recs:
+            cat = r["category"]
+            int_score = interests[cat]
+            rec_score = rel_weight * (r[weakest_link] * 10) + interest_weight * (
+                int_score * 10
+            )
+            rec_dict[r["title"]] = rec_score
+
+        # sort and limit on front end
+        print(rec_dict)
+        return rec_dict

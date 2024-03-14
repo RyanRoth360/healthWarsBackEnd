@@ -36,13 +36,20 @@ def set_friend():
 
 @app.route("/get_recs", methods=['GET'])
 def get_recs():
-    # PHILIP ALG
-    pass
+    db = database()
+    data = request.get_json()
+    username = data.get('username')
+    return db.get_recomendations(username)
 
 
-@app.route("/get_leaderboard", methods=['GET'])
+@app.route("/get_leaderboard", methods=['POST'])
 def get_leaderboard():
     db = database()
+    data = request.get_json()
+    username = data.get('username')
+    result = db.get_leaderboard(username)
+    # print(result)
+    return result
 
 
 @app.route("/login", methods=['GET'])
@@ -51,8 +58,9 @@ def login():
     data = request.get_json()
     un = data.get('username')
     pw = data.get('password')
-    db.check_login(un, pw)
+    result = db.check_login(un, pw)
     db.close()
+    return result
 
 
 if __name__ == '__main__':
