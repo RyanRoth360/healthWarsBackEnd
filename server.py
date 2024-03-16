@@ -49,18 +49,21 @@ def get_leaderboard():
     username = data.get('username')
     result = db.get_leaderboard(username)
     # print(result)
-    return result
+    print(result)
+    return jsonify(result)
 
 
-@app.route("/login", methods=['GET'])
+@app.route("/login", methods=['POST'])
 def login():
+    print("hello")
     db = database()
     data = request.get_json()
     un = data.get('username')
     pw = data.get('password')
     result = db.check_login(un, pw)
     db.close()
-    return result
+    print(result)
+    return str(result)
 
 
 if __name__ == '__main__':

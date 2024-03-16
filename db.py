@@ -135,9 +135,10 @@ class database:
     def insert_interests(self, interests_dict):
         '''Takes a dictionary from the front end'''
         user_id = self.get_userid(interests_dict['username'])
-        interests_dict["user_id"] = user_id
-        del interests_dict['username']
-        self.insert("interests", interests_dict)
+        interests = interests_dict['interests']
+        interests["user_id"] = user_id
+        # del interests_dict['username']
+        self.insert("interests", interests)
 
     def insert_reccomendation(self, title, category):
         rec_dict = {}
