@@ -5,7 +5,7 @@ import math
 
 class database:
 
-    DB_NAME = "/Users/ryan_roth/Desktop/125 backend/healthWarsBackEnd/health_wars.db"
+    DB_NAME = "/Users/mac/Desktop/health-wars-backend/healthWarsBackEnd/health_wars.db"
 
     def __init__(self):
         self.db_conn = sqlite3.connect(self.DB_NAME)
@@ -134,6 +134,8 @@ class database:
 
     def insert_interests(self, interests_dict):
         '''Takes a dictionary from the front end'''
+        print('hey')
+        print(interests_dict)
         user_id = self.get_userid(interests_dict['username'])
         interests = interests_dict['interests']
         interests["user_id"] = user_id

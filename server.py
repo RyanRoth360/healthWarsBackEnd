@@ -18,6 +18,7 @@ def set_user():
 
 @app.route("/set_interests", methods=['POST'])
 def set_interests():
+    print('test')
     db = database()
     data = request.get_json()
     db.insert_interests(data)
@@ -39,7 +40,8 @@ def get_recs():
     db = database()
     data = request.get_json()
     username = data.get('username')
-    return db.get_recomendations(username)
+    result = db.get_recomendations(username)
+    return jsonify(result)
 
 
 @app.route("/get_leaderboard", methods=['POST'])
@@ -62,7 +64,6 @@ def login():
     pw = data.get('password')
     result = db.check_login(un, pw)
     db.close()
-    print(result)
     return str(result)
 
 
