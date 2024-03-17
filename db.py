@@ -263,9 +263,8 @@ class database:
         interests = self.get_interest_dict(username)
         recs = self.select("reccomendations", [
                            weakest_link, "category", "title"])
-        rel_weight = 0.4
-        interest_weight = 0.6
-        # Need to query the relevance score of the weakest_link
+        rel_weight = 0.6
+        interest_weight = 0.4
 
         rec_dict = {}
         for r in recs:
@@ -274,8 +273,10 @@ class database:
             rec_score = rel_weight * (r[weakest_link] * 10) + interest_weight * (
                 int_score
             )
-            rec_dict[r["title"]] = rec_score
+            rec_dict[r["title"]] = [cat, rec_score]
 
         # sort and limit on front end
-        print(rec_dict)
-        return rec_dict
+        sorted_dict = sorted(rec_dict.items(), key=lambda x: -x[1][1])
+        first_5_results = dict(sorted_dict[:5])
+
+        return first_5_results

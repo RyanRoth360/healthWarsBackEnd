@@ -41,6 +41,7 @@ def get_recs():
     data = request.get_json()
     username = data.get('username')
     result = db.get_recomendations(username)
+    # print(result)
     return jsonify(result)
 
 
