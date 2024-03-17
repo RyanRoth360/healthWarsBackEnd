@@ -35,7 +35,7 @@ def set_friend():
     db.close()
 
 
-@app.route("/get_recs", methods=['GET'])
+@app.route("/get_recs", methods=['POST'])
 def get_recs():
     db = database()
     data = request.get_json()
